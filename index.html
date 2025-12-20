@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .calculator {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>🧮 Age Calculator</h1>
+        <p>Enter your birth year to calculate your age</p>
+        
+        <input type="number" id="birthYear" placeholder="Enter birth year (e.g., 1990)" min="1900" max="2024">
+        <input type="number" id="currentYear" placeholder="Current year (optional)">
+        <button onclick="calculateAge()">Calculate Age</button>
+        
+        <div id="result"></div>
+        
+        <div id="example">
+            <p><strong>Example API call:</strong></p>
+            <pre>POST https://your-project.glitch.me/api/calculate-age
+{
+    "birthYear": 1990
+}</pre>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your actual Glitch URL
+        const API_URL = 'https://your-project-name.glitch.me/api/calculate-age';
+        
+        async function calculateAge() {
+            const birthYear = document.getElementById('birthYear').value;
+            const currentYear = document.getElementById('currentYear').value;
+            
+            if (!birthYear) {
+                alert('Please enter your birth year');
+                return;
+            }
+            
+            const payload = { birthYear: parseInt(birthYear) };
+            if (currentYear) {
+                payload.currentYear = parseInt(currentYear);
+            }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                displayResult(data);
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3 style="color: red;">Error</h3>
+                    <p>Failed to connect to API server</p>
+                    <p>Make sure your API is running on Glitch</p>
+                `;
+                document.getElementById('result').style.display = 'block';
+            }
+        }
+        
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            
+            if (data.success) {
+                resultDiv.innerHTML = `
+                    <h3>🎉 ${data.message}</h3>
+                    <p><strong>Birth Year:</strong> ${data.data.birthYear}</p>
+                    <p><strong>Current Year:</strong> ${data.data.currentYear}</p>
+                    <p><strong>Age:</strong> ${data.data.age} years old</p>
+                    <p><strong>Category:</strong> ${data.data.category}</p>
+                    <p><strong>Zodiac Sign:</strong> ${data.data.zodiacSign}</p>
+                    <p><strong>Next Milestone:</strong> ${data.data.nextMilestone} (in ${data.data.yearsUntilNextMilestone} years)</p>
+                    <p><strong>Born in a leap year:</strong> ${data.data.isLeapYear ? 'Yes' : 'No'}</p>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <h3 style="color: red;">❌ Error</h3>
+                    <p>${data.message}</p>
+                `;
+            }
+            
+            resultDiv.style.display = 'block';
+        }
+        
+        // Auto-fill current year
+        document.getElementById('currentYear').placeholder = `Current year (defaults to ${new Date().getFullYear()})`;
+    </script>
+</body>
+  </html>
